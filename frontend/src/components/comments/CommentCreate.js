@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { fetchCommentCreate } from '../../actions/comments';
@@ -47,7 +47,7 @@ class CommentCreate extends Component {
     }
 
     render() {
-        const { posts, post } = this.props;
+        const { post } = this.props;
         const { redirect } = this.state;
     
         if (typeof post === typeof undefined || post === null) {
@@ -113,7 +113,6 @@ class CommentCreate extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        posts: state.posts.posts,
         post: state.posts.post
     };
 };

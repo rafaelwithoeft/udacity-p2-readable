@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Alert from './../Alert';
@@ -44,6 +44,10 @@ class CommentList extends Component {
 
     render() {
         const { commentsLoading, commentsError, comments, post } = this.props;
+
+        if (typeof post === typeof undefined || post === null) {
+            return <Redirect to={'/'} />
+        }
 
         return (
             <div className="readable-posts-list">
@@ -107,9 +111,25 @@ class CommentList extends Component {
     }
 };
 
+const sortComments = (comments, sort) => {
+    switch (sort) {
+        case "voteAsc":
+            return comments.slice().sort((a, b) => a.voteScore - b.voteScore);
+        case "voteDesc":
+            return comments.slice().sort((a, b) => b.voteScore - a.voteScore);
+        case "dateAsc":
+            return comments.slice().sort((a, b) => a.timestamp - b.timestamp);
+        default:
+            return comments.slice().sort((a, b) => b.timestamp - a.timestamp);
+
+    }
+}
+
 const mapStateToProps = (state) => {
     return {
-        comments: state.comments.comments,
+        post: state.posts.post,
+        category: state.categories.category,
+        comments: sortComments(state.comments.comments, state.comments.sort),
         commentsLoading: state.comments.commentsLoading,
         commentsError: state.comments.commentsError,
         sort: state.comments.sort

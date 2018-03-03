@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Alert from './../Alert';
@@ -52,7 +52,7 @@ class CommentUpdate extends Component {
     }
 
     render() {
-        const { post, posts, commentLoading, commentError } = this.props;
+        const { post, commentLoading, commentError } = this.props;
         const { comment, redirect } = this.state;
 
         if (typeof post === typeof undefined || post === null) {
@@ -139,7 +139,6 @@ class CommentUpdate extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        posts: state.posts.posts,
         post: state.posts.post,
         comment: state.comments.comment,
         commentLoading: state.comments.commentLoading,

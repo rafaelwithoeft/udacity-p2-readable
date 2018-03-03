@@ -42,7 +42,7 @@ export default function comments(state = commentsInitialState, action) {
         case COMMENTS_SUCCESS:
             return {
                 ...state,
-                comments: sortComments(action.comments, state.sort)
+                comments: action.comments
             }
         case COMMENTS_SORTBY_DATE_ASC:
             return {
@@ -67,7 +67,7 @@ export default function comments(state = commentsInitialState, action) {
         case COMMENTS_SORTBY_SUCCESS:
             return {
                 ...state,
-                comments: sortComments(state.comments, state.sort)
+                comments: state.comments
             };
         case COMMENT_LOADING:
             return {
@@ -89,16 +89,16 @@ export default function comments(state = commentsInitialState, action) {
         case COMMENT_CREATE_SUCCESS:
             return {
                 ...state,
-                comments: sortComments(state.comments.concat(action.comment), state.sort)
+                comments: state.comments.concat(action.comment)
             };
         case COMMENT_UPDATE_SUCCESS:
             return {
                 ...state,
-                comments: sortComments(state.comments.filter(comment => comment.id !== action.comment.id).concat(action.comment), state.sort)
+                comments: state.comments.filter(comment => comment.id !== action.comment.id).concat(action.comment)
             };
         case COMMENT_DELETE_SUCESS:
             return {
-                comments: sortComments(state.comments.filter(comment => comment.id !== action.comment.id), state.sort)
+                comments: state.comments.filter(comment => comment.id !== action.comment.id)
             };
         case COMMENT_VOTE_ADD:
             return {
@@ -128,19 +128,5 @@ export default function comments(state = commentsInitialState, action) {
             };
         default:
             return state;
-    }
-}
-
-const sortComments = (comments, sort) => {
-    switch (sort) {
-        case "voteAsc":
-            return comments.slice().sort((a, b) => a.voteScore - b.voteScore);
-        case "voteDesc":
-            return comments.slice().sort((a, b) => b.voteScore - a.voteScore);
-        case "dateAsc":
-            return comments.slice().sort((a, b) => a.timestamp - b.timestamp);
-        default:
-            return comments.slice().sort((a, b) => b.timestamp - a.timestamp);
-
     }
 }
