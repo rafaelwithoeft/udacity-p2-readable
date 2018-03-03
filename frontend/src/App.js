@@ -14,17 +14,18 @@ const App = () => (
 	<div className="app">
 		<NavBar />
 		<div className="container-fluid">
-			<CategoryList />
-
 			<div className="row">
-				<div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+				<div className="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
+					<CategoryList />
+				</div>
+				<div className="col-12 col-sm-12 col-md-6 col-lg-8 col-xl-9">
 					<Switch>
-						<Route exact path="/:category" component={PostList} />
+						<Route exact path="/post/create" component={PostCreate} />
+						<Route exact path="/post/update/:post" component={PostUpdate}/>
 						<Route exact path="/:category/:post" component={PostDetail} />
-						<Route exact path="/:category/post/create" component={PostCreate} />
-						<Route exact path="/:category/post/update/:post" component={PostUpdate}/>
 						<Route exact path="/:category/:post/comment/create" component={CommentCreate} />
 						<Route exact path="/:category/:post/comment/update/:comment" component={CommentUpdate} />
+						<Route component={PostList} />
 					</Switch>
 				</div>
 			</div>

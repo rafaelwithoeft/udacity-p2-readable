@@ -1,32 +1,23 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Alert from './../Alert';
-import Loading from './../Loading';
 
-import { fetchPostUpdate, fetchPostData } from '../../actions/posts';
+import { categorySuccess } from '../../actions/categories'
+import { fetchPostUpdate, postLoading, postSuccess } from '../../actions/posts';
+import Loading from '../Loading';
 
 class PostUpdate extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            category: this.props.match.params.category,
-            post: null,
             redirect: false
         };
     }
 
     componentDidMount() {
-        this.props.getPost(this.props.match.params.post);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.post !== null) {
-            this.setState(prevState => ({
-                post: nextProps.post
-            }));
-        }
+        this.props.getPost(this.props.postSelected);
     }
 
     handleInputChange = event => {
@@ -34,37 +25,34 @@ class PostUpdate extends Component {
             value = target.value,
             name = target.name;
 
-        this.setState(prevState => ({
+        this.props = {
+            ...this.props,
             post: {
-                ...prevState.post,
+                ...this.props.post,
                 timestamp: Date.now(),
                 [name]: value,
             }
-        }));
+        }
     }
 
-    onClickButtonAtualizar(event) {
+    handleSubmitForm(event) {
         event.preventDefault();
 
-        if (this.state.post !== null) {
-            this.props.updatePost(this.state.post);
-            this.setState({ redirect: true });
-        }
+        this.props.selectCategory(this.props.post.category);
+        this.props.updatePost(this.props.post);
+        
+        this.setState({
+            redirect: true
+        });
     }
 
     render() {
-        const { categories, postLoading, postError } = this.props;
-        const { category, post, redirect } = this.state;
-
-        //Redirecionar o usuário para a página inicial se a categoria for inválida ou as categorias não estiverem na store.
-        const foundCategory = categories.find(element => element.name === category);
-        if (typeof foundCategory === typeof undefined && (typeof categories === typeof undefined || categories.length === 0)) {
-            return <Redirect to="/" />
-        }
+        const { categories, post, postLoading } = this.props;
+        const { redirect } = this.state;
 
         //Redirecionar após atualizar
-        if (redirect) {
-            return <Redirect to={`/${category}`} />
+        if (post !== null && redirect) {
+            return <Redirect to={`/${post.category}`} />
         }
 
         return (
@@ -72,49 +60,39 @@ class PostUpdate extends Component {
                 <div className="row d-flex justify-content-center">
                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                         <h1 className="text-center text-uppercase font-weight-bold rounded box-shadow my-5">
-                            Atualizando um post da categoria <span className="text-info">{category}</span>
+                            <u>Atualização de um post</u>
                         </h1>
                     </div>
                 </div>
 
-                <div className="row">
-                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 my-2">
-                        <Link
-                            className="btn btn-secondary"
-                            to={{ pathname: `/${category}` }}
-                            style={{ textDecorationLine: 'none' }}
-                        >
-                            Voltar
-                            </Link>
+                {
+                    postLoading &&
+                    <Loading />
+                }
 
-                        {
-                            this.state.post !== null &&
-                            <button onClick={event => this.onClickButtonAtualizar(event)} className="btn btn-success ml-2">Atualizar</button>
-                        }
-                    </div>
-                </div>
-                {
-                    postLoading && <Loading />
-                }
                 {
                     !postLoading &&
-                    postError &&
-                    <Alert classAlert="alert-danger" message="Ocorreu um erro ao carregar a postagem." />
-                }
-                {
-                    !postLoading &&
-                    !postError &&
-                    (typeof post === typeof undefined || post === null) &&
+                    (
+                        typeof post === typeof undefined || 
+                        post === null
+                    ) &&
                     <Alert classAlert="alert-danger" message="Nenhuma postagem foi encontrada." />
                 }
-
                 {
                     !postLoading &&
-                    !postError &&
-                    (typeof post !== typeof undefined && post !== null) &&
-                    <form id="form-post-create" onSubmit={event => event.preventDefault()}>
+                    (
+                        typeof post !== typeof undefined &&
+                        post !== null
+                    ) &&
+                    <form id="form-post-create" onSubmit={event => this.handleSubmitForm(event)}>
+                        <div className="row mb-3">
+                            <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                                <button type="submit" className="btn btn-lg btn-success">Atualizar</button>
+                            </div>
+                        </div>
+
                         <div className="form-row d-flex justify-content-center my-2">
-                            <div className="form-group col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                            <div className="form-group col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                                 <label htmlFor="form-post-title">Título</label>
                                 <input
                                     type="text"
@@ -123,10 +101,13 @@ class PostUpdate extends Component {
                                     aria-describedby="title"
                                     placeholder="Título"
                                     autoFocus
-                                    onChange={event => this.handleInputChange(event)}
+                                    required
                                     defaultValue={post.title}
+                                    onChange={event => this.handleInputChange(event)}
                                 />
                             </div>
+                        </div>
+                        <div className="form-row d-flex justify-content-center my-2">
                             <div className="form-group col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                 <label htmlFor="form-post-author">Autor</label>
                                 <input
@@ -134,11 +115,31 @@ class PostUpdate extends Component {
                                     className="form-control"
                                     name="author"
                                     placeholder="Autor"
-                                    onChange={event => this.handleInputChange(event)}
+                                    required
                                     defaultValue={post.author}
+                                    onChange={event => this.handleInputChange(event)}
                                 />
                             </div>
+                            <div className="form-group col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                <label className="form-label">Categoria &nbsp;</label>
+                                <select
+                                    className="form-control"
+                                    name="category"
+                                    placeholder="Categoria"
+                                    required
+                                    defaultValue={post.category ? post.category : ""}
+                                    onChange={event => this.handleInputChange(event)}
+                                >
+                                    <option value="" disabled>Selecione</option>
+                                    {
+                                        categories.map((element) => {
+                                            return <option key={element.path} value={element.path}>{element.name}</option>
+                                        })
+                                    }
+                                </select>
+                            </div>
                         </div>
+
                         <div className="form-row d-flex justify-content-center my-2">
                             <div className="form-group col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                                 <label htmlFor="form-post-body">Conteúdo</label>
@@ -146,8 +147,9 @@ class PostUpdate extends Component {
                                     className="form-control"
                                     name="body"
                                     rows="3"
-                                    onChange={event => this.handleInputChange(event)}
+                                    required
                                     defaultValue={post.body}
+                                    onChange={event => this.handleInputChange(event)}
                                 >
                                 </textarea>
                             </div>
@@ -162,16 +164,22 @@ class PostUpdate extends Component {
 const mapStateToProps = (state) => {
     return {
         categories: state.categories.categories,
+        posts: state.posts.posts,
         post: state.posts.post,
         postLoading: state.posts.postLoading,
-        postError: state.posts.postError
+        postSelected: state.posts.postSelected
     };
 };
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        getPost: (post) => dispatch(fetchPostData(post)),
-        updatePost: (postObject) => dispatch(fetchPostUpdate(postObject))
+        getPost: (post) => {
+            dispatch(postLoading(true));
+            dispatch(postSuccess());
+            dispatch(postLoading(false));
+        }, 
+        updatePost: (post) => dispatch(fetchPostUpdate(post)),
+        selectCategory: (category) => dispatch(categorySuccess(category))
     };
 };
 

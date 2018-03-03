@@ -1,20 +1,20 @@
 import {
     POSTS_LOADING, 
-    POSTS_ERROR, 
+    POSTS_ERROR,
     POSTS_SUCCESS,
     POSTS_SORTBY_DATE_ASC,
     POSTS_SORTBY_DATE_DESC,
     POSTS_SORTBY_VOTE_ASC,
     POSTS_SORTBY_VOTE_DESC,
     POSTS_SORTBY_SUCCESS,
-    POST_LOADING,
-    POST_ERROR,
-    POST_SUCCESS,
     POST_CREATE_SUCCESS,
     POST_UPDATE_SUCCESS,
     POST_DELETE,
     POST_VOTE_ADD,
-    POST_VOTE_REMOVE
+    POST_VOTE_REMOVE,
+    POST_LOADING,
+    POST_SUCCESS,
+    POST_SELECT
 } from '../actions/posts';
 
 const postsInitialState = {
@@ -22,8 +22,8 @@ const postsInitialState = {
     postsLoading: false,
     postsError: false,
     post: null,
+    postSelected: null,
     postLoading: false,
-    postError: false,
     sort: "voteDesc"
 };
 
@@ -32,19 +32,17 @@ export default function posts(state = postsInitialState, action) {
         case POSTS_LOADING:
             return {
                 ...state,
-                posts: [],
                 postsLoading: action.postsLoading
             };
         case POSTS_ERROR:
             return {
                 ...state,
-                posts: [],
                 postsError: action.postsError
             };
         case POSTS_SUCCESS:
             return {
                 ...state,
-                posts: sortPosts(action.posts, state.sort)
+                posts: action.posts
             };
         case POSTS_SORTBY_DATE_ASC:
             return {
@@ -69,39 +67,39 @@ export default function posts(state = postsInitialState, action) {
         case POSTS_SORTBY_SUCCESS:
             return {
                 ...state,
-                posts: sortPosts(state.posts, state.sort)
+                posts: state.posts
             };
         case POST_LOADING:
             return {
                 ...state,
-                post: null,
                 postLoading: action.postLoading
-            };
-        case POST_ERROR:
-            return {
-                ...state,
-                post: null,
-                postError: action.postError
             };
         case POST_SUCCESS:
             return {
                 ...state,
-                post: action.post
-            };
+                post: state.posts.find(post => post.id === state.postSelected)
+            }
+        case POST_SELECT:
+            return {
+                ...state,
+                post: null,
+                postSelected: action.post
+            }
         case POST_CREATE_SUCCESS:
             return {
                 ...state,
-                posts: sortPosts(state.posts.concat(action.post), state.sort)
+                posts: state.posts.concat(action.post)
             };
         case POST_UPDATE_SUCCESS:
             return {
                 ...state,
-                posts: sortPosts(state.posts.filter(post => post.id !== action.post.id).concat(action.post), state.sort)
-            };
+                posts: state.posts.filter(post => post.id !== action.post.id).concat(action.post)
+            }
         case POST_DELETE:
             return {
-                posts: sortPosts(state.posts.filter(post => post.id !== action.post.id), state.sort)
-            };
+                ...state,
+                posts: state.posts.filter(post => post.id !== action.post.id)
+            }
         case POST_VOTE_ADD:
             return {
                 ...state,
@@ -113,11 +111,7 @@ export default function posts(state = postsInitialState, action) {
                         ...post,
                         voteScore: post.voteScore + 1
                     }
-                }),
-                post: {
-                    ...state.post,
-                    voteScore: state.post.id === action.post.id ? state.post.voteScore + 1 : state.post.voteScore
-                }
+                })
             };
         case POST_VOTE_REMOVE:
             return {
@@ -130,27 +124,9 @@ export default function posts(state = postsInitialState, action) {
                         ...post,
                         voteScore: post.voteScore -1
                     }
-                }),
-                post: {
-                    ...state.post,
-                    voteScore: state.post.id === action.post.id ? state.post.voteScore + 1 : state.post.voteScore
-                }
+                })
             };
         default:
             return state;
-    }
-}
-
-const sortPosts = (posts, sort)  => {
-    switch (sort) {
-        case "voteAsc":
-            return posts.slice().sort((a, b) => a.voteScore - b.voteScore);
-        case "voteDesc":
-            return posts.slice().sort((a, b) => b.voteScore - a.voteScore);
-        case "dateAsc":
-            return posts.slice().sort((a, b) => a.timestamp - b.timestamp);
-        default:
-            return posts.slice().sort((a, b) => b.timestamp - a.timestamp);
-
     }
 }

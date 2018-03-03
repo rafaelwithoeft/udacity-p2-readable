@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { fetchPostVoteAdd, fetchPostVoteRemove, fetchPostDelete } from '../../actions/posts';
+import { fetchPostVoteAdd, fetchPostVoteRemove, fetchPostDelete, postSuccess, postSelect } from '../../actions/posts';
 
 class PostCard extends Component {
     
@@ -18,6 +18,10 @@ class PostCard extends Component {
         this.props.deletePost(post);
     }
 
+    handleEditClick(post) {
+        this.props.selectPost(post.id);
+    }
+
     render() {
         const { post, showDetail } = this.props;
 
@@ -28,6 +32,7 @@ class PostCard extends Component {
                         <Link
                             to={{ pathname: `/${post.category}/${post.id}` }}
                             style={{ textDecorationLine: "none", fontSize: "22px" }}
+                            onClick={event => this.handleEditClick(post)}
                         >
                             {post.title}
                         </Link>
@@ -58,8 +63,9 @@ class PostCard extends Component {
                                 <Link
                                     className="btn btn-sm btn-outline-primary ml-2"
                                     title="Editar"
-                                    to={{ pathname: `/${post.category}/post/update/${post.id}` }}
+                                    to={{ pathname: `/post/update/${post.id}` }}
                                     style={{ textDecorationLine: "none" }}
+                                    onClick={event => this.handleEditClick(post)}
                                 >
                                     <i className="fa fa-pencil"></i>
                                 </Link>
@@ -86,9 +92,10 @@ class PostCard extends Component {
 
 const mapDispatchToProps = (dispatch) => {
     return {
+        selectPost: (post) => dispatch(postSelect(post)),
+        deletePost: (post) => dispatch(fetchPostDelete(post)),
         voteAdd: (post) => dispatch(fetchPostVoteAdd(post)),
-        voteRemove: (post) => dispatch(fetchPostVoteRemove(post)),
-        deletePost: (post) => dispatch(fetchPostDelete(post))
+        voteRemove: (post) => dispatch(fetchPostVoteRemove(post))
     };
 };
 

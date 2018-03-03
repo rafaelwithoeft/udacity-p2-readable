@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Alert from './../Alert';
@@ -7,36 +7,20 @@ import Loading from './../Loading';
 import PostCard from './PostCard';
 
 import { 
-    fetchPostsData, 
-    fetchAllPostsData, 
-    postsSortByDateAsc, 
-    postsSortByDateDesc, 
+    fetchPostsData,
+    postsSortByDateAsc,
+    postsSortByDateDesc,
     postsSortByVoteAsc,
     postsSortByVoteDesc,
     postsSortBySuccess
 } from '../../actions/posts';
 
 class PostList extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { category: null };
-    }
-
-    componentWillMount() {
-        if (typeof this.props.match !== typeof undefined && typeof this.props.match.params.category !== typeof undefined) {
-            this.setState({
-                category: this.props.match.params.category.trim()
-            });
-        }
-    }
-
     componentDidMount() {
-        const { category } = this.state;
+        const { category } = this.props;
 
-        if (category === null || category.trim().length === 0) {
-            this.props.getAllPosts();
-        } else {
-            this.props.getPosts(category);
+        if (category === null || category.length === 0) {
+            this.props.getPosts();
         }
     }
 
@@ -60,67 +44,57 @@ class PostList extends Component {
     }
 
     render() {
-        const { postsLoading, postsError, posts, categories } = this.props;
-        const { category } = this.state;
+        const { postsLoading, postsError, category } = this.props;
+        let { posts } = this.props;
 
         if (category !== null) {
-            //Redirecionar o usuário para a página inicial se a categoria for inválida ou as categorias não estiverem na store.
-            const foundCategory = categories.find(element => element.name === category);
-            if (typeof foundCategory === typeof undefined && (typeof categories === typeof undefined || categories.length === 0)) {
-                return <Redirect to="/" />
-            }
+            //Filtrar os posts pela categoria
+            posts = posts.filter(element => element.category === category);
         }
 
         return (
             <div className="readable-posts-list">
+
                 {
                     category === null &&
                     <div className="row d-flex justify-content-center">
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                             <h1 className="text-center text-uppercase font-weight-bold rounded box-shadow my-5">
-                                Exibindo todas as postagens
+                                <u>
+                                    Exibindo todas as postagens
+                                </u>
                             </h1>
                         </div>
                     </div>
                 }
+
                 {
                     category !== null &&
                     <div className="row d-flex justify-content-center">
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                             <h1 className="text-center text-uppercase font-weight-bold rounded box-shadow my-5">
-                                Postagens da categoria <span className="text-info">{category}</span>
+                                <u>
+                                    Postagens da categoria <span className="text-info">{category}</span>
+                                </u>
                             </h1>
                         </div>
                     </div>
                 }
-                {
-                    category !== null &&
-                    <div className="row">
-                        <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 my-2">
-                            <Link
-                                className="btn btn-secondary"
-                                to={{ pathname: '/' }}
-                                style={{ textDecorationLine: 'none' }}
-                            >
-                                Voltar
-                            </Link>
 
-                            <Link
-                                className="btn btn-success ml-2"
-                                to={{ pathname: `/${category}/post/create` }}
-                                style={{ textDecorationLine: 'none' }}
-                            >
-                                Cadastrar
-                            </Link>
-                        </div>
+                <div className="row mb-3">
+                    <div className="col-12 col-sm-12 col-lg-6 col-xl-6">
+                        <Link
+                            className="btn btn-lg btn-success"
+                            to={{ pathname: `/post/create` }}
+                            style={{ textDecorationLine: 'none' }}
+                        >
+                            Novo Post
+                        </Link>
                     </div>
-                }
-
-                <div className="form-inline">
-                    <div className="form-group">
-                        <label htmlFor="readable-posts-sort">Ordenar por &nbsp;</label>
+                    <div className="col-12 col-sm-12 col-lg-6 col-xl-6">
+                        <label className="form-label">Ordenar por &nbsp;</label>
                         <select
-                            className="form-control"
+                            className="form-control mx-sm-6"
                             id="readable-posts-sort"
                             defaultValue={this.props.sort}
                             onChange={event => this.handleOnChangeSort(event)}
@@ -131,8 +105,8 @@ class PostList extends Component {
                             <option value="dateAsc">Menos recente</option>
                         </select>
                     </div>
-                </div>
-                
+                </div>  
+
                 {
                     postsLoading && <Loading />
                 }
@@ -168,11 +142,24 @@ class PostList extends Component {
     }
 };
 
+const sortPosts = (posts, sort) => {
+    switch (sort) {
+        case "voteAsc":
+            return posts.slice().sort((a, b) => a.voteScore - b.voteScore);
+        case "voteDesc":
+            return posts.slice().sort((a, b) => b.voteScore - a.voteScore);
+        case "dateAsc":
+            return posts.slice().sort((a, b) => a.timestamp - b.timestamp);
+        default:
+            return posts.slice().sort((a, b) => b.timestamp - a.timestamp);
+    }
+}
+
 const mapStateToProps = (state) => {
     return {
-        categories: state.categories.categories,
+        category: state.categories.category,
         sort: state.posts.sort,
-        posts: state.posts.posts,
+        posts: sortPosts(state.posts.posts, state.posts.sort),
         postsError: state.posts.postsError,
         postsLoading: state.posts.postsLoading
     };
@@ -180,8 +167,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        getPosts: (category) => dispatch(fetchPostsData(category)),
-        getAllPosts: () => dispatch(fetchAllPostsData()),
+        getPosts: () => dispatch(fetchPostsData()),
         sortDateAsc: () => dispatch(postsSortByDateAsc()),
         sortDateDesc: () => dispatch(postsSortByDateDesc()),
         sortVoteAsc: () => dispatch(postsSortByVoteAsc()),
