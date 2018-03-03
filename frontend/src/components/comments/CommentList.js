@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Alert from './../Alert';
@@ -15,7 +16,6 @@ import {
  } from '../../actions/comments';
 
 class CommentList extends Component {
-
     componentDidMount() {
         const { post } = this.props;
         if (typeof post !== typeof undefined && post !== null) {
@@ -47,11 +47,20 @@ class CommentList extends Component {
 
         return (
             <div className="readable-posts-list">
-                <div className="form-inline">
-                    <div className="form-group">
-                        <label htmlFor="readable-posts-sort">Ordenar por &nbsp;</label>
+                <div className="row mb-3">
+                    <div className="col-12 col-sm-12 col-lg-6 col-xl-6">
+                        <Link
+                            className="btn btn-lg btn-success"
+                            to={{ pathname: `/${post.category}/${post.id}/comment/create` }}
+                            style={{ textDecorationLine: 'none' }}
+                        >
+                            Novo comentário
+                        </Link>
+                    </div>
+                    <div className="col-12 col-sm-12 col-lg-6 col-xl-6">
+                        <label className="form-label">Ordenar por &nbsp;</label>
                         <select
-                            className="form-control"
+                            className="form-control mx-sm-6"
                             id="readable-posts-sort"
                             defaultValue={this.props.sort}
                             onChange={event => this.handleOnChangeSortComment(event)}

@@ -17,11 +17,7 @@ import {
 
 class PostList extends Component {
     componentDidMount() {
-        const { category } = this.props;
-
-        if (category === null || category.length === 0) {
-            this.props.getPosts();
-        }
+        this.props.getPosts();
     }
 
     handleOnChangeSort(event) {
@@ -47,7 +43,7 @@ class PostList extends Component {
         const { postsLoading, postsError, category } = this.props;
         let { posts } = this.props;
 
-        if (category !== null) {
+        if (category !== null && posts !== null) {
             //Filtrar os posts pela categoria
             posts = posts.filter(element => element.category === category);
         }
@@ -105,7 +101,7 @@ class PostList extends Component {
                             <option value="dateAsc">Menos recente</option>
                         </select>
                     </div>
-                </div>  
+                </div>
 
                 {
                     postsLoading && <Loading />

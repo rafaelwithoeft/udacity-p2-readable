@@ -11,7 +11,6 @@ class CommentUpdate extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            post: this.props.match.params.post,
             comment: null,
             redirect: false
         };
@@ -53,18 +52,16 @@ class CommentUpdate extends Component {
     }
 
     render() {
-        const { posts, commentLoading, commentError } = this.props;
-        const { post, comment, redirect } = this.state;
+        const { post, posts, commentLoading, commentError } = this.props;
+        const { comment, redirect } = this.state;
 
-        //Redirecionar o usuário para a página inicial se a postagem for inválida ou os posts não estiverem na store.
-        const foundPost = posts.find(element => element.id === post);
-        if (typeof foundPost === typeof undefined && (typeof posts === typeof undefined || posts.length === 0)) {
-            return <Redirect to="/" />
+        if (typeof post === typeof undefined || post === null) {
+            return <Redirect to={'/'} />
         }
 
         //Redirecionar após cadastro.
         if (redirect) {
-            return <Redirect to={`/${foundPost.category}/${foundPost.id}`} />
+            return <Redirect to={`/${post.category}/${post.id}`} />
         }
 
         return (
@@ -74,24 +71,16 @@ class CommentUpdate extends Component {
                         <h1 className="text-center text-uppercase font-weight-bold rounded box-shadow my-5">
                             Atualizando um comentário da postagem
                             <br />
-                            <span className="text-info">{foundPost.title}</span>
+                            <span className="text-info">{post.title}</span>
                         </h1>
                     </div>
                 </div>
 
                 <div className="row">
                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 my-2">
-                        <Link
-                            className="btn btn-secondary"
-                            to={{ pathname: `/${foundPost.category}/${foundPost.id}` }}
-                            style={{ textDecorationLine: 'none' }}
-                        >
-                            Voltar
-                        </Link>
-
                         {
                             this.state.comment !== null &&
-                            <button onClick={event => this.onClickButtonAtualizar(event)} className="btn btn-success ml-2">Atualizar</button>
+                            <button onClick={event => this.onClickButtonAtualizar(event)} className="btn btn-lg btn-success">Atualizar</button>
                         }
                     </div>
                 </div>
@@ -151,6 +140,7 @@ class CommentUpdate extends Component {
 const mapStateToProps = (state) => {
     return {
         posts: state.posts.posts,
+        post: state.posts.post,
         comment: state.comments.comment,
         commentLoading: state.comments.commentLoading,
         commentError: state.comments.commentError

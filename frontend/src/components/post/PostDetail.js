@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Alert from './../Alert';
@@ -11,9 +10,7 @@ import { fetchPostVoteAdd, fetchPostVoteRemove, fetchPostDelete, postLoading, po
 
 class PostDetail extends Component {
     componentDidMount() {
-        if (typeof this.props.match !== typeof undefined && typeof this.props.match.params.post !== typeof undefined) {
-            this.props.getPost(this.props.match.params.post.trim());
-        }
+        this.props.getPost();
     }
 
     onClickAdicionarVoto(post) {
@@ -40,21 +37,6 @@ class PostDetail extends Component {
                                 Visualizando uma postagem
                             </u>
                         </h1>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 my-2">
-                        {
-                            typeof post !== typeof undefined &&
-                            post !== null &&
-                            <Link
-                                className="btn btn-success ml-2"
-                                to={{ pathname: `/${post.category}/${post.id}/comment/create` }}
-                                style={{ textDecorationLine: 'none' }}
-                            >
-                                Novo comentário
-                            </Link>
-                        }
                     </div>
                 </div>
 
@@ -112,7 +94,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         getPost: (post) => {
             dispatch(postLoading(true));
-            dispatch(postSuccess(post));
+            dispatch(postSuccess());
             dispatch(postLoading(false));
         },
         voteAdd: (post) => dispatch(fetchPostVoteAdd(post)),

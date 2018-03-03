@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { fetchPostVoteAdd, fetchPostVoteRemove, fetchPostDelete, postSuccess, postSelect } from '../../actions/posts';
+import { fetchPostVoteAdd, fetchPostVoteRemove, fetchPostDelete, postSelect } from '../../actions/posts';
 
 class PostCard extends Component {
-    
     onClickAdicionarVoto(post) {
         this.props.voteAdd(post);
     };
@@ -18,8 +17,10 @@ class PostCard extends Component {
         this.props.deletePost(post);
     }
 
-    handleEditClick(post) {
-        this.props.selectPost(post.id);
+    handleSelectPost(post) {
+        if (this.props.postSelected !== post.id) {
+            this.props.selectPost(post.id);
+        }
     }
 
     render() {
@@ -32,7 +33,7 @@ class PostCard extends Component {
                         <Link
                             to={{ pathname: `/${post.category}/${post.id}` }}
                             style={{ textDecorationLine: "none", fontSize: "22px" }}
-                            onClick={event => this.handleEditClick(post)}
+                            onClick={event => this.handleSelectPost(post)}
                         >
                             {post.title}
                         </Link>
@@ -65,7 +66,7 @@ class PostCard extends Component {
                                     title="Editar"
                                     to={{ pathname: `/post/update/${post.id}` }}
                                     style={{ textDecorationLine: "none" }}
-                                    onClick={event => this.handleEditClick(post)}
+                                    onClick={event => this.handleSelectPost(post)}
                                 >
                                     <i className="fa fa-pencil"></i>
                                 </Link>
@@ -99,4 +100,10 @@ const mapDispatchToProps = (dispatch) => {
     };
 };
 
-export default connect(null, mapDispatchToProps)(PostCard);
+const mapStateToProps = (state) => {
+    return {
+        postSelected: state.posts.postSelected
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(PostCard);

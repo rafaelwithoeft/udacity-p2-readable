@@ -8,7 +8,6 @@ class CommentCreate extends Component {
     constructor(props) {
         super(props);
         this.state = { 
-            post: this.props.match.params.post,
             comment: {
                 author: '',
                 body: ''
@@ -30,14 +29,14 @@ class CommentCreate extends Component {
         }));
     }
 
-    onClickButtonCadastrar(event) {
+    handleButtonCreate(event) {
         event.preventDefault();
 
         let commentObject = {
             ...this.state.comment,
             id: Math.random().toString(36).substr(2, 9),
             timestamp: Date.now(),
-            parentId: this.state.post,
+            parentId: this.props.post.id,
             voteScore: 0,
             commentCount: 0
         }
@@ -48,18 +47,16 @@ class CommentCreate extends Component {
     }
 
     render() {
-        const { posts } = this.props;
-        const { post, redirect } = this.state;
-        
-        //Redirecionar o usuário para a página inicial se a postagem for inválida ou os posts não estiverem na store.
-        const foundPost = posts.find(element => element.id === post);
-        if (typeof foundPost === typeof undefined && (typeof posts === typeof undefined || posts.length === 0)) {
-            return <Redirect to="/" />
+        const { posts, post } = this.props;
+        const { redirect } = this.state;
+    
+        if (typeof post === typeof undefined || post === null) {
+            return <Redirect to={'/'} />
         }
 
         //Redirecionar após cadastro.
-        if (redirect) {
-            return <Redirect to={`/${foundPost.category}/${foundPost.id}`} />
+        if (post !== null && redirect) {
+            return <Redirect to={`/${post.category}/${post.id}`} />
         }
 
         return (
@@ -70,22 +67,14 @@ class CommentCreate extends Component {
                         <h1 className="text-center text-uppercase font-weight-bold rounded box-shadow my-5">
                             Cadastrando um novo comentário na postagem 
                             <br/>
-                            <span className="text-info">{foundPost.title}</span>
+                            <span className="text-info">{post.title}</span>
                         </h1>
                     </div>
                 </div>
 
                 <div className="row">
                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 my-2">
-                        <Link
-                            className="btn btn-secondary"
-                            to={{ pathname: `/${foundPost.category}/${foundPost.id}` }}
-                            style={{ textDecorationLine: 'none' }}
-                        >
-                            Voltar
-                        </Link>
-
-                        <button onClick={event => this.onClickButtonCadastrar(event)} className="btn btn-success ml-2">Cadastrar</button>
+                        <button onClick={event => this.handleButtonCreate(event)} className="btn btn-lg btn-success">Cadastrar</button>
                     </div>
                 </div>
 
@@ -111,7 +100,6 @@ class CommentCreate extends Component {
                                     name="body"
                                     rows="3"
                                     onChange={event => this.handleInputChange(event)}
-                                    defaultValue={post.body}
                                 >
                                 </textarea>
                             </div>
@@ -125,7 +113,8 @@ class CommentCreate extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        posts: state.posts.posts
+        posts: state.posts.posts,
+        post: state.posts.post
     };
 };
 
